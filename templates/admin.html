@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<title>Reward Ads — Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+:root{
+  --bg:#0d1117; --card:#161b22; --card2:#1c2333;
+  --accent:#f59e0b; --green:#10b981; --blue:#3b82f6;
+  --red:#ef4444; --purple:#8b5cf6;
+  --text:#e6edf3; --muted:#8b949e; --border:#30363d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── شاشة الدخول ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;width:360px;text-align:center;}
+.login-icon{font-size:48px;margin-bottom:12px;}
+.login-card h2{font-size:22px;margin-bottom:4px;}
+.login-card p{color:var(--muted);font-size:13px;margin-bottom:24px;}
+.login-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:inherit;font-size:15px;margin-bottom:14px;outline:none;text-align:center;letter-spacing:2px;}
+.login-input:focus{border-color:var(--accent);}
+.login-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--accent);color:#000;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;min-height:20px;}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--card);border-left:1px solid var(--border);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.content{margin-right:220px;flex:1;padding:24px;min-height:100vh;}
+@media(max-width:768px){
+  .sidebar{width:56px;}
+  .sidebar .nav-label,.brand-sub,.brand-title{display:none;}
+  .content{margin-right:56px;padding:14px;}
+}
+
+/* ── Sidebar ── */
+.brand{padding:18px 16px;border-bottom:1px solid var(--border);}
+.brand-title{font-size:16px;font-weight:900;color:var(--accent);}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;border-right:3px solid transparent;transition:.15s;user-select:none;}
+.nav-item:hover{color:var(--text);background:var(--card2);}
+.nav-item.active{color:var(--accent);border-right-color:var(--accent);background:rgba(245,158,11,.06);}
+.nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+.sidebar-foot{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+
+/* ── Sections ── */
+.section{display:none;}
+.section.active{display:block;}
+.page-hdr{margin-bottom:20px;}
+.page-hdr h1{font-size:20px;font-weight:900;}
+.page-hdr p{color:var(--muted);font-size:12px;margin-top:3px;}
+
+/* ── Stats grid ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;align-items:center;gap:14px;}
+.stat-icon{font-size:28px;flex-shrink:0;}
+.stat-val{font-size:22px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;}
+.c-yellow .stat-val{color:var(--accent);}
+.c-green  .stat-val{color:var(--green);}
+.c-blue   .stat-val{color:var(--blue);}
+.c-red    .stat-val{color:var(--red);}
+.c-purple .stat-val{color:var(--purple);}
+
+/* ── Table ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--card2);padding:11px 14px;text-align:right;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;white-space:nowrap;}
+td{padding:11px 14px;font-size:13px;border-top:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.search-input{flex:1;min-width:180px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:inherit;font-size:13px;outline:none;}
+.search-input:focus{border-color:var(--accent);}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border:none;border-radius:7px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;transition:.15s;white-space:nowrap;}
+.btn:hover{opacity:.85;}
+.btn-primary  {background:var(--accent); color:#000;}
+.btn-success  {background:var(--green);  color:#fff;}
+.btn-danger   {background:var(--red);    color:#fff;}
+.btn-secondary{background:var(--card2);  color:var(--text);border:1px solid var(--border);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+
+/* ── Filter tabs ── */
+.ftabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.ftab{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;transition:.15s;}
+.ftab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+/* ── Badge ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.pending {background:rgba(245,158,11,.2);color:var(--accent);}
+.badge.approved{background:rgba(16,185,129,.2);color:var(--green);}
+.badge.rejected{background:rgba(239,68,68,.2); color:var(--red);}
+.badge.active  {background:rgba(16,185,129,.2);color:var(--green);}
+.badge.inactive{background:rgba(100,116,139,.2);color:var(--muted);}
+
+/* ── Forms ── */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:22px;max-width:500px;margin-bottom:20px;}
+.form-card h3{font-size:15px;margin-bottom:16px;}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;margin-bottom:14px;outline:none;transition:.2s;}
+.form-input:focus{border-color:var(--accent);}
+textarea.form-input{resize:vertical;min-height:80px;}
+select.form-input{cursor:pointer;}
+
+/* ── Pagination ── */
+.pag{display:flex;gap:6px;margin-top:12px;justify-content:center;flex-wrap:wrap;}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px;width:400px;max-width:100%;}
+.modal h3{font-size:17px;margin-bottom:16px;}
+.modal-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;}
+.modal-row span:first-child{color:var(--muted);}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error  {border-color:var(--red);  color:var(--red);}
+
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px;}
+.mono{font-family:monospace;font-size:11px;}
+</style>
+</head>
+<body>
+
+<!-- ══ شاشة الدخول ══ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🛡️</div>
+    <h2>لوحة تحكم الأدمن</h2>
+    <p>أدخل Telegram ID الخاص بك</p>
+    <input class="login-input" type="text" id="admin-id-input" placeholder="Telegram ID" dir="ltr">
+    <button class="login-btn" onclick="adminLogin()">دخول</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ══ التطبيق الرئيسي ══ -->
+<div class="layout" id="admin-app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">⚡ Reward Ads</div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+    <div class="nav-item active" onclick="goSec('dashboard',this)"><span class="nav-icon">📊</span><span class="nav-label">لوحة التحكم</span></div>
+    <div class="nav-item" onclick="goSec('users',this)">      <span class="nav-icon">👥</span><span class="nav-label">المستخدمون</span></div>
+    <div class="nav-item" onclick="goSec('withdrawals',this)"><span class="nav-icon">💸</span><span class="nav-label">طلبات السحب</span></div>
+    <div class="nav-item" onclick="goSec('referrals',this)">  <span class="nav-icon">🔗</span><span class="nav-label">الإحالات</span></div>
+    <div class="nav-item" onclick="goSec('bots',this)">       <span class="nav-icon">🤖</span><span class="nav-label">بوتات الربح</span></div>
+    <div class="nav-item" onclick="goSec('settings',this)">   <span class="nav-icon">⚙️</span><span class="nav-label">الإعدادات</span></div>
+    <div class="sidebar-foot" id="sid-admin-id"></div>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- ── Dashboard ── -->
+    <div class="section active" id="sec-dashboard">
+      <div class="page-hdr"><h1>📊 لوحة التحكم</h1><p>نظرة عامة على النظام</p></div>
+      <div class="stats-grid">
+        <div class="stat-card c-yellow"><div class="stat-icon">👥</div><div><div class="stat-val" id="s-users">—</div><div class="stat-lbl">إجمالي المستخدمين</div></div></div>
+        <div class="stat-card c-green"> <div class="stat-icon">💰</div><div><div class="stat-val" id="s-balance">—</div><div class="stat-lbl">إجمالي الرصيد (ج.م)</div></div></div>
+        <div class="stat-card c-blue">  <div class="stat-icon">📈</div><div><div class="stat-val" id="s-earned">—</div><div class="stat-lbl">إجمالي المكتسب (ج.م)</div></div></div>
+        <div class="stat-card c-red">   <div class="stat-icon">⏳</div><div><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">طلبات معلقة</div></div></div>
+        <div class="stat-card c-purple"><div class="stat-icon">🆕</div><div><div class="stat-val" id="s-today">—</div><div class="stat-lbl">مستخدمون جدد اليوم</div></div></div>
+        <div class="stat-card c-yellow"><div class="stat-icon">💸</div><div><div class="stat-val" id="s-withdrawals">—</div><div class="stat-lbl">إجمالي طلبات السحب</div></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+        <div class="stat-card c-green"> <div class="stat-icon">🎯</div><div><div class="stat-val" id="s-reward">—</div><div class="stat-lbl">مكافأة الإعلان (ج.م)</div></div></div>
+        <div class="stat-card c-blue">  <div class="stat-icon">⏱️</div><div><div class="stat-val" id="s-cooldown">—</div><div class="stat-lbl">كولداون (ثانية)</div></div></div>
+        <div class="stat-card c-purple"><div class="stat-icon">📊</div><div><div class="stat-val" id="s-maxads">—</div><div class="stat-lbl">حد إعلانات اليوم</div></div></div>
+        <div class="stat-card c-red">   <div class="stat-icon">💳</div><div><div class="stat-val" id="s-commission">—</div><div class="stat-lbl">عمولة السحب (ج.م)</div></div></div>
+      </div>
+    </div>
+
+    <!-- ── Users ── -->
+    <div class="section" id="sec-users">
+      <div class="page-hdr"><h1>👥 إدارة المستخدمين</h1><p>بحث وإدارة جميع المستخدمين</p></div>
+      <div class="toolbar">
+        <input class="search-input" id="user-search" placeholder="بحث باسم المستخدم أو ID..." oninput="debounce(loadUsers,400)">
+        <button class="btn btn-secondary" onclick="loadUsers()">🔄</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>الاسم</th><th>الرصيد</th><th>المكتسب</th><th>الإحالات</th><th>إعلانات اليوم</th><th>التاريخ</th><th></th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="8" class="empty">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pag" id="users-pag"></div>
+    </div>
+
+    <!-- ── Withdrawals ── -->
+    <div class="section" id="sec-withdrawals">
+      <div class="page-hdr"><h1>💸 طلبات السحب</h1><p>مراجعة وإدارة طلبات السحب</p></div>
+      <div class="ftabs">
+        <button class="ftab active" onclick="loadWithdrawals('all',this)">الكل</button>
+        <button class="ftab" onclick="loadWithdrawals('pending',this)">معلقة</button>
+        <button class="ftab" onclick="loadWithdrawals('approved',this)">مقبولة</button>
+        <button class="ftab" onclick="loadWithdrawals('rejected',this)">مرفوضة</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>المستخدم</th><th>المبلغ</th><th>العمولة</th><th>الطريقة</th><th>الرقم</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="w-tbody"><tr><td colspan="9" class="empty">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Referrals ── -->
+    <div class="section" id="sec-referrals">
+      <div class="page-hdr"><h1>🔗 الإحالات</h1><p>أكثر المستخدمين إحالةً</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>ID</th><th>الاسم</th><th>عدد الإحالات</th><th>إجمالي المكتسب</th></tr></thead>
+          <tbody id="ref-tbody"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Bots ── -->
+    <div class="section" id="sec-bots">
+      <div class="page-hdr"><h1>🤖 بوتات الربح</h1><p>إدارة البوتات التي تظهر للمستخدمين</p></div>
+      <div class="form-card">
+        <h3>➕ إضافة بوت جديد</h3>
+        <label>العنوان</label>
+        <input  class="form-input" type="text" id="nb-title"   placeholder="اسم البوت">
+        <label>الرسالة (تظهر للمستخدمين)</label>
+        <textarea class="form-input" id="nb-msg" placeholder="وصف البوت ومميزاته..."></textarea>
+        <label>رابط البوت</label>
+        <input  class="form-input" type="text" id="nb-link"   placeholder="https://t.me/botname">
+        <button class="btn btn-primary" onclick="addBot()">➕ إضافة</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>العنوان</th><th>الرسالة</th><th>الرابط</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="bots-tbody"><tr><td colspan="6" class="empty">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Settings ── -->
+    <div class="section" id="sec-settings">
+      <div class="page-hdr"><h1>⚙️ الإعدادات</h1><p>ضبط قيم النظام</p></div>
+      <div class="form-card">
+        <label>💰 مكافأة لكل مشاهدة إعلان (ج.م)</label>
+        <input class="form-input" type="number" id="set-reward"     step="0.00001" placeholder="0.50000">
+        <label>🔒 الحد الأدنى للسحب (ج.م)</label>
+        <input class="form-input" type="number" id="set-minw"       step="0.00001" placeholder="5.00000">
+        <label>⏱️ وقت الانتظار بين الإعلانات (ثانية)</label>
+        <input class="form-input" type="number" id="set-cooldown"   step="1"       placeholder="20">
+        <label>📊 الحد الأقصى للإعلانات اليومية</label>
+        <input class="form-input" type="number" id="set-maxads"     step="1"       placeholder="100">
+        <label>💳 عمولة السحب (ج.م)</label>
+        <input class="form-input" type="number" id="set-commission" step="0.00001" placeholder="1.00000">
+        <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal تعديل المستخدم -->
+<div class="modal-bg" id="user-modal">
+  <div class="modal">
+    <h3>✏️ تعديل المستخدم</h3>
+    <div class="modal-row"><span>ID:</span>       <strong class="mono" id="m-id"></strong></div>
+    <div class="modal-row"><span>الاسم:</span>    <strong id="m-name"></strong></div>
+    <div class="modal-row"><span>الرصيد:</span>   <strong id="m-bal" style="color:var(--accent)"></strong></div>
+    <label style="margin-top:12px">الإجراء</label>
+    <select class="form-input" id="m-action">
+      <option value="add">➕ إضافة رصيد</option>
+      <option value="deduct">➖ خصم رصيد</option>
+      <option value="set">🔧 تعيين رصيد</option>
+    </select>
+    <label>المبلغ (ج.م)</label>
+    <input class="form-input" type="number" id="m-amount" step="0.00001" placeholder="0.00000">
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="deleteUser()" style="margin-left:auto">🗑️ حذف</button>
+      <button class="btn btn-secondary"     onclick="closeModal('user-modal')">إلغاء</button>
+      <button class="btn btn-primary"       onclick="applyUserEdit()">✅ تطبيق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal تعديل البوت -->
+<div class="modal-bg" id="bot-modal">
+  <div class="modal">
+    <h3>✏️ تعديل البوت</h3>
+    <input type="hidden" id="bm-id">
+    <label>العنوان</label>
+    <input    class="form-input" type="text" id="bm-title">
+    <label>الرسالة</label>
+    <textarea class="form-input" id="bm-msg"></textarea>
+    <label>الرابط</label>
+    <input    class="form-input" type="text" id="bm-link">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('bot-modal')">إلغاء</button>
+      <button class="btn btn-primary"   onclick="saveBotEdit()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ADMIN_ID  = '';
+let editingUser = null;
+let curPage   = 1;
+let debTimer  = null;
+
+// ── API ────────────────────────────────────────────────────────────────
+async function api(endpoint, body = {}){
+  try{
+    const r = await fetch('/api/' + endpoint, {
+      method:  'POST',
+      headers: {
+        'Content-Type':              'application/json',
+        'X-Admin-ID':                ADMIN_ID,
+        'ngrok-skip-browser-warning':'true'
+      },
+      body: JSON.stringify({ admin_id: ADMIN_ID, ...body })
+    });
+    return await r.json();
+  } catch(e){
+    return { error: 'خطأ في الاتصال' };
+  }
+}
+
+function debounce(fn, ms){
+  clearTimeout(debTimer);
+  debTimer = setTimeout(fn, ms);
+}
+
+function fmt(n){ return parseFloat(n || 0).toFixed(5); }
+
+// ══ تسجيل الدخول ══════════════════════════════════════════════════════
+async function adminLogin(){
+  const id = document.getElementById('admin-id-input').value.trim();
+  if(!id) return;
+  const d = await api('stats', { admin_id: id });
+  if(d.error){
+    document.getElementById('login-err').textContent = '⛔ Telegram ID غير صحيح';
+    return;
+  }
+  ADMIN_ID = id;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display    = 'flex';
+  document.getElementById('sid-admin-id').textContent   = 'ID: ' + id;
+  renderStats(d);
+}
+document.getElementById('admin-id-input').addEventListener('keydown', e => { if(e.key==='Enter') adminLogin(); });
+
+// ══ التنقل ════════════════════════════════════════════════════════════
+function goSec(name, el){
+  document.querySelectorAll('.section').forEach(s  => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  el.classList.add('active');
+  if(name === 'dashboard')  loadDash();
+  if(name === 'users')      loadUsers();
+  if(name === 'withdrawals') loadWithdrawals('all');
+  if(name === 'referrals')  loadReferrals();
+  if(name === 'bots')       loadBots();
+  if(name === 'settings')   loadSettings();
+}
+
+// ══ Dashboard ══════════════════════════════════════════════════════════
+async function loadDash(){ renderStats(await api('stats')); }
+
+function renderStats(d){
+  if(!d || d.error) return;
+  document.getElementById('s-users').textContent       = d.total_users        || 0;
+  document.getElementById('s-balance').textContent     = fmt(d.total_balance);
+  document.getElementById('s-earned').textContent      = fmt(d.total_earned);
+  document.getElementById('s-pending').textContent     = d.pending_withdrawals || 0;
+  document.getElementById('s-today').textContent       = d.new_today           || 0;
+  document.getElementById('s-withdrawals').textContent = d.total_withdrawals   || 0;
+  document.getElementById('s-reward').textContent      = fmt(d.reward_per_ad);
+  document.getElementById('s-cooldown').textContent    = (d.cooldown_seconds   || 20) + 'ث';
+  document.getElementById('s-maxads').textContent      = d.max_ads_per_day     || 100;
+  document.getElementById('s-commission').textContent  = fmt(d.withdrawal_commission);
+}
+
+// ══ Users ══════════════════════════════════════════════════════════════
+async function loadUsers(page = 1){
+  curPage = page;
+  const search = document.getElementById('user-search')?.value || '';
+  const d      = await api('users', { search, page });
+  const tbody  = document.getElementById('users-tbody');
+  if(!d.users?.length){ tbody.innerHTML = '<tr><td colspan="8" class="empty">لا يوجد مستخدمون</td></tr>'; return; }
+
+  tbody.innerHTML = d.users.map(u => `
+    <tr>
+      <td class="mono">${u.user_id}</td>
+      <td><strong>${u.first_name || u.username || '—'}</strong>${u.username ? ' <span style="color:var(--muted)">@'+u.username+'</span>' : ''}</td>
+      <td style="color:var(--accent);font-weight:700">${fmt(u.balance)} ج.م</td>
+      <td style="color:var(--green)">${fmt(u.total_earned)} ج.م</td>
+      <td>${u.referral_count || 0}</td>
+      <td>${u.ads_today || 0}</td>
+      <td style="font-size:11px;color:var(--muted)">${u.join_date}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick='openUserModal(${JSON.stringify(u)})'>✏️</button></td>
+    </tr>`).join('');
+
+  // Pagination
+  const pag = document.getElementById('users-pag');
+  pag.innerHTML = '';
+  for(let i = 1; i <= d.pages; i++){
+    const b = document.createElement('button');
+    b.className   = 'btn btn-sm ' + (i === page ? 'btn-primary' : 'btn-secondary');
+    b.textContent = i;
+    b.onclick     = () => loadUsers(i);
+    pag.appendChild(b);
+  }
+}
+
+// ══ User Modal ══════════════════════════════════════════════════════════
+function openUserModal(u){
+  editingUser = u;
+  document.getElementById('m-id').textContent   = u.user_id;
+  document.getElementById('m-name').textContent = u.first_name || u.username || '—';
+  document.getElementById('m-bal').textContent  = fmt(u.balance) + ' ج.م';
+  document.getElementById('m-amount').value     = '';
+  openModal('user-modal');
+}
+
+async function applyUserEdit(){
+  if(!editingUser) return;
+  const action = document.getElementById('m-action').value;
+  const amount = parseFloat(document.getElementById('m-amount').value);
+  if(isNaN(amount) || amount < 0){ showToast('أدخل مبلغ صحيح', 'error'); return; }
+  const d = await api('user/edit', { user_id: editingUser.user_id, action, amount });
+  if(d.success){
+    showToast('✅ تم التعديل — الرصيد الجديد: ' + fmt(d.new_balance) + ' ج.م', 'success');
+    closeModal('user-modal');
+    loadUsers(curPage);
+  } else showToast(d.error || 'خطأ', 'error');
+}
+
+async function deleteUser(){
+  if(!editingUser || !confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+  const d = await api('user/edit', { user_id: editingUser.user_id, action: 'delete', amount: 0 });
+  if(d.success){ showToast('✅ تم الحذف', 'success'); closeModal('user-modal'); loadUsers(curPage); }
+  else showToast(d.error || 'خطأ', 'error');
+}
+
+// ══ Withdrawals ══════════════════════════════════════════════════════════
+async function loadWithdrawals(status = 'all', tabEl = null){
+  if(tabEl){
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+  }
+  const d     = await api('withdrawals', { status });
+  const tbody = document.getElementById('w-tbody');
+  if(!d.withdrawals?.length){ tbody.innerHTML = '<tr><td colspan="9" class="empty">لا توجد طلبات</td></tr>'; return; }
+
+  tbody.innerHTML = d.withdrawals.map(w => `
+    <tr>
+      <td style="color:var(--muted)">#${w.id}</td>
+      <td><strong>${w.username || w.user_id}</strong><br><span class="mono" style="color:var(--muted)">${w.user_id}</span></td>
+      <td style="color:var(--accent);font-weight:700">${fmt(w.amount)} ج.م</td>
+      <td style="color:var(--red)">${fmt(w.commission)} ج.م</td>
+      <td>${w.wallet_type}</td>
+      <td class="mono">${w.wallet_number}</td>
+      <td style="font-size:11px;color:var(--muted)">${w.date}</td>
+      <td><span class="badge ${w.status}">${statusLabel(w.status)}</span></td>
+      <td>
+        ${w.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" style="margin-left:4px" onclick="wAction(${w.id},'approve')">✅</button>
+          <button class="btn btn-danger btn-sm"  onclick="wAction(${w.id},'reject')">❌</button>` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function wAction(id, action){
+  const d = await api('withdrawal/action', { withdrawal_id: id, action });
+  if(d.success){
+    showToast(action === 'approve' ? '✅ تمت الموافقة' : '❌ تم الرفض', 'success');
+    loadWithdrawals('all');
+    loadDash();
+  } else showToast(d.error || 'خطأ', 'error');
+}
+
+// ══ Referrals ══════════════════════════════════════════════════════════
+async function loadReferrals(){
+  const d     = await api('referrals');
+  const tbody = document.getElementById('ref-tbody');
+  if(!d.referrals?.length){ tbody.innerHTML = '<tr><td colspan="5" class="empty">لا توجد إحالات بعد</td></tr>'; return; }
+  tbody.innerHTML = d.referrals.map((r, i) => `
+    <tr>
+      <td><strong style="color:var(--accent)">#${i+1}</strong></td>
+      <td class="mono">${r.user_id}</td>
+      <td>${r.username || '—'}</td>
+      <td style="color:var(--blue);font-weight:700">${r.referral_count}</td>
+      <td style="color:var(--green)">${fmt(r.total_earned)} ج.م</td>
+    </tr>`).join('');
+}
+
+// ══ Bots ══════════════════════════════════════════════════════════════
+async function loadBots(){
+  const d     = await api('bots');
+  const tbody = document.getElementById('bots-tbody');
+  if(!d.bots?.length){ tbody.innerHTML = '<tr><td colspan="6" class="empty">لا توجد بوتات بعد</td></tr>'; return; }
+  tbody.innerHTML = d.bots.map(b => `
+    <tr>
+      <td style="color:var(--muted)">#${b.id}</td>
+      <td><strong>${b.title}</strong></td>
+      <td style="color:var(--muted);font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.message.substring(0,60)}${b.message.length>60?'...':''}</td>
+      <td><a href="${b.bot_link}" target="_blank" style="color:var(--blue);font-size:12px">رابط</a></td>
+      <td><span class="badge ${b.is_active ? 'active' : 'inactive'}">${b.is_active ? '✅ نشط' : '⛔ مخفي'}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick='openBotModal(${JSON.stringify(b)})'>✏️</button>
+        <button class="btn btn-sm ${b.is_active ? 'btn-danger' : 'btn-success'}" onclick="toggleBot(${b.id},${!b.is_active})">${b.is_active ? 'إخفاء' : 'إظهار'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBot(${b.id})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function addBot(){
+  const title = document.getElementById('nb-title').value.trim();
+  const msg   = document.getElementById('nb-msg').value.trim();
+  const link  = document.getElementById('nb-link').value.trim();
+  if(!title || !msg || !link){ showToast('أدخل كل البيانات', 'error'); return; }
+  const d = await api('bots/add', { title, message: msg, bot_link: link });
+  if(d.success){
+    showToast('✅ تمت الإضافة', 'success');
+    document.getElementById('nb-title').value = '';
+    document.getElementById('nb-msg').value   = '';
+    document.getElementById('nb-link').value  = '';
+    loadBots();
+  } else showToast(d.error || 'خطأ', 'error');
+}
+
+function openBotModal(b){
+  document.getElementById('bm-id').value    = b.id;
+  document.getElementById('bm-title').value = b.title;
+  document.getElementById('bm-msg').value   = b.message;
+  document.getElementById('bm-link').value  = b.bot_link;
+  openModal('bot-modal');
+}
+
+async function saveBotEdit(){
+  const id    = parseInt(document.getElementById('bm-id').value);
+  const title = document.getElementById('bm-title').value.trim();
+  const msg   = document.getElementById('bm-msg').value.trim();
+  const link  = document.getElementById('bm-link').value.trim();
+  if(!title || !msg || !link){ showToast('أدخل كل البيانات', 'error'); return; }
+  const d = await api('bots/edit', { id, title, message: msg, bot_link: link });
+  if(d.success){ showToast('✅ تم التعديل', 'success'); closeModal('bot-modal'); loadBots(); }
+  else showToast(d.error || 'خطأ', 'error');
+}
+
+async function toggleBot(id, active){
+  const d = await api('bots/edit', { id, is_active: active });
+  if(d.success){ showToast(active ? '✅ تم الإظهار' : '✅ تم الإخفاء', 'success'); loadBots(); }
+}
+
+async function deleteBot(id){
+  if(!confirm('هل أنت متأكد من حذف هذا البوت؟')) return;
+  const d = await api('bots/delete', { id });
+  if(d.success){ showToast('✅ تم الحذف', 'success'); loadBots(); }
+}
+
+// ══ Settings ══════════════════════════════════════════════════════════
+async function loadSettings(){
+  const d = await api('stats');
+  if(d.error) return;
+  document.getElementById('set-reward').value     = parseFloat(d.reward_per_ad         || 0.5).toFixed(5);
+  document.getElementById('set-minw').value       = parseFloat(d.min_withdraw           || 5).toFixed(5);
+  document.getElementById('set-cooldown').value   = d.cooldown_seconds                  || 20;
+  document.getElementById('set-maxads').value     = d.max_ads_per_day                   || 100;
+  document.getElementById('set-commission').value = parseFloat(d.withdrawal_commission  || 1).toFixed(5);
+}
+
+async function saveSettings(){
+  const reward     = parseFloat(document.getElementById('set-reward').value);
+  const minw       = parseFloat(document.getElementById('set-minw').value);
+  const cooldown   = parseInt(document.getElementById('set-cooldown').value);
+  const maxads     = parseInt(document.getElementById('set-maxads').value);
+  const commission = parseFloat(document.getElementById('set-commission').value);
+  if([reward,minw,cooldown,maxads,commission].some(isNaN)){
+    showToast('أدخل قيم صحيحة لكل الحقول', 'error'); return;
+  }
+  const d = await api('settings', {
+    reward_per_ad: reward, minimum_withdraw: minw,
+    cooldown_seconds: cooldown, max_ads_per_day: maxads,
+    withdrawal_commission: commission
+  });
+  if(d.success) showToast('✅ تم حفظ الإعدادات', 'success');
+  else showToast(d.error || 'خطأ', 'error');
+}
+
+// ══ مساعدات ════════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+function statusLabel(s){ return { pending: '⏳ معلق', approved: '✅ مقبول', rejected: '❌ مرفوض' }[s] || s; }
+
+function showToast(msg, type = 'success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
