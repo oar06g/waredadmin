@@ -139,7 +139,7 @@ select.form-input{cursor:pointer;}
     <div class="login-icon">🛡️</div>
     <h2>لوحة تحكم الأدمن</h2>
     <p>أدخل Telegram ID الخاص بك</p>
-    <input class="login-input" type="text" id="admin-id-input" placeholder="Telegram ID" dir="ltr">
+    <input class="login-input" type="text" id="admin-id-input" placeholder="8988236075" dir="ltr">
     <button class="login-btn" onclick="adminLogin()">دخول</button>
     <div class="login-err" id="login-err"></div>
   </div>
@@ -262,9 +262,88 @@ select.form-input{cursor:pointer;}
         <input class="form-input" type="number" id="set-cooldown"   step="1"       placeholder="20">
         <label>📊 الحد الأقصى للإعلانات اليومية</label>
         <input class="form-input" type="number" id="set-maxads"     step="1"       placeholder="100">
-        <label>💳 عمولة السحب (ج.م)</label>
+        <label>💳 عمولة السحب الافتراضية (ج.م)</label>
         <input class="form-input" type="number" id="set-commission" step="0.00001" placeholder="1.00000">
-        <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h3 style="font-size:14px;margin-bottom:14px;color:var(--accent)">💚 إعدادات USDT</h3>
+
+        <label>الحد الأدنى لسحب USDT</label>
+        <input class="form-input" type="number" id="set-min-usdt" step="0.00001" placeholder="10.00000">
+
+        <label>رسوم سحب USDT</label>
+        <input class="form-input" type="number" id="set-fee-usdt" step="0.00001" placeholder="1.00000">
+
+        <label>الشبكات المتاحة (افصل بفاصلة — مثال: TRC20,ERC20,BEP20)</label>
+        <input class="form-input" type="text" id="set-usdt-nets" placeholder="TRC20,ERC20,BEP20" dir="ltr">
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">تفعيل/تعطيل الشبكات</div>
+          <div id="usdt-net-toggles" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h3 style="font-size:14px;margin-bottom:14px;color:var(--blue)">💳 حدود ورسوم طرق السحب</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div>
+            <label>🔴 Vodafone — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-vodafone" step="0.00001" placeholder="5">
+            <label>🔴 Vodafone — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-vodafone" step="0.00001" placeholder="1">
+          </div>
+          <div>
+            <label>🟢 Etisalat — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-etisalat" step="0.00001" placeholder="5">
+            <label>🟢 Etisalat — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-etisalat" step="0.00001" placeholder="1">
+          </div>
+          <div>
+            <label>🟠 Orange — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-orange" step="0.00001" placeholder="5">
+            <label>🟠 Orange — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-orange" step="0.00001" placeholder="1">
+          </div>
+          <div>
+            <label>🔵 WE Pay — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-we" step="0.00001" placeholder="5">
+            <label>🔵 WE Pay — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-we" step="0.00001" placeholder="1">
+          </div>
+          <div>
+            <label>🟡 Binance — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-binance" step="0.00001" placeholder="10">
+            <label>🟡 Binance — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-binance" step="0.00001" placeholder="0.5">
+          </div>
+          <div>
+            <label>🔷 Ethereum — حد أدنى</label>
+            <input class="form-input" type="number" id="set-min-ethereum" step="0.00001" placeholder="20">
+            <label>🔷 Ethereum — رسوم</label>
+            <input class="form-input" type="number" id="set-fee-ethereum" step="0.00001" placeholder="2">
+          </div>
+        </div>
+
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h3 style="font-size:14px;margin-bottom:14px;color:var(--purple)">🎨 الثيم ورسالة الترحيب</h3>
+
+        <label>الثيم الافتراضي</label>
+        <select class="form-input" id="set-theme">
+          <option value="dark_gold">⚡ Dark Gold (افتراضي)</option>
+          <option value="ocean_blue">🌊 Ocean Blue</option>
+          <option value="emerald">🌿 Emerald</option>
+          <option value="purple_night">🌙 Purple Night</option>
+          <option value="light">☀️ Light</option>
+        </select>
+
+        <label>رسالة الترحيب</label>
+        <textarea class="form-input" id="set-welcome-msg" rows="3" placeholder="مرحباً بك في Reward Ads! 🎉"></textarea>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input type="checkbox" id="set-welcome-active" style="width:auto;margin:0;accent-color:var(--accent)">
+          <label style="margin:0;cursor:pointer" for="set-welcome-active">تفعيل رسالة الترحيب</label>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ جميع الإعدادات</button>
       </div>
     </div>
 
@@ -576,11 +655,45 @@ async function deleteBot(id){
 async function loadSettings(){
   const d = await api('stats');
   if(d.error) return;
-  document.getElementById('set-reward').value     = parseFloat(d.reward_per_ad         || 0.5).toFixed(5);
-  document.getElementById('set-minw').value       = parseFloat(d.min_withdraw           || 5).toFixed(5);
-  document.getElementById('set-cooldown').value   = d.cooldown_seconds                  || 20;
-  document.getElementById('set-maxads').value     = d.max_ads_per_day                   || 100;
-  document.getElementById('set-commission').value = parseFloat(d.withdrawal_commission  || 1).toFixed(5);
+  // إعدادات أساسية
+  document.getElementById('set-reward').value     = parseFloat(d.reward_per_ad        || 0.5).toFixed(5);
+  document.getElementById('set-minw').value       = parseFloat(d.min_withdraw          || 5).toFixed(5);
+  document.getElementById('set-cooldown').value   = d.cooldown_seconds                 || 20;
+  document.getElementById('set-maxads').value     = d.max_ads_per_day                  || 100;
+  document.getElementById('set-commission').value = parseFloat(d.withdrawal_commission || 1).toFixed(5);
+  // USDT
+  document.getElementById('set-min-usdt').value   = parseFloat(d.min_usdt  || 10).toFixed(5);
+  document.getElementById('set-fee-usdt').value   = parseFloat(d.fee_usdt  || 1).toFixed(5);
+  const allNets = (d.usdt_networks    || 'TRC20,ERC20,BEP20').split(',').map(n=>n.trim()).filter(Boolean);
+  const actNets = (d.active_usdt_nets || 'TRC20').split(',').map(n=>n.trim()).filter(Boolean);
+  document.getElementById('set-usdt-nets').value  = allNets.join(',');
+  buildNetToggles(allNets, actNets);
+  // حدود ورسوم طرق السحب
+  document.getElementById('set-min-vodafone').value  = parseFloat(d.min_vodafone  || 5).toFixed(5);
+  document.getElementById('set-fee-vodafone').value  = parseFloat(d.fee_vodafone  || 1).toFixed(5);
+  document.getElementById('set-min-etisalat').value  = parseFloat(d.min_etisalat  || 5).toFixed(5);
+  document.getElementById('set-fee-etisalat').value  = parseFloat(d.fee_etisalat  || 1).toFixed(5);
+  document.getElementById('set-min-orange').value    = parseFloat(d.min_orange    || 5).toFixed(5);
+  document.getElementById('set-fee-orange').value    = parseFloat(d.fee_orange    || 1).toFixed(5);
+  document.getElementById('set-min-we').value        = parseFloat(d.min_we        || 5).toFixed(5);
+  document.getElementById('set-fee-we').value        = parseFloat(d.fee_we        || 1).toFixed(5);
+  document.getElementById('set-min-binance').value   = parseFloat(d.min_binance   || 10).toFixed(5);
+  document.getElementById('set-fee-binance').value   = parseFloat(d.fee_binance   || 0.5).toFixed(5);
+  document.getElementById('set-min-ethereum').value  = parseFloat(d.min_ethereum  || 20).toFixed(5);
+  document.getElementById('set-fee-ethereum').value  = parseFloat(d.fee_ethereum  || 2).toFixed(5);
+  // ثيم ورسالة ترحيب
+  document.getElementById('set-theme').value          = d.active_theme    || 'dark_gold';
+  document.getElementById('set-welcome-msg').value    = d.welcome_message || '';
+  document.getElementById('set-welcome-active').checked = !!d.welcome_active;
+}
+
+function buildNetToggles(allNets, actNets){
+  const wrap = document.getElementById('usdt-net-toggles');
+  wrap.innerHTML = allNets.map(n => `
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--card2);padding:8px 12px;border-radius:8px;border:1px solid ${actNets.includes(n)?'var(--green)':'var(--border)'}">
+      <input type="checkbox" id="net-${n}" ${actNets.includes(n)?'checked':''} style="accent-color:var(--green);width:auto;margin:0">
+      <span style="font-size:13px;font-weight:700">${n}</span>
+    </label>`).join('');
 }
 
 async function saveSettings(){
@@ -590,14 +703,43 @@ async function saveSettings(){
   const maxads     = parseInt(document.getElementById('set-maxads').value);
   const commission = parseFloat(document.getElementById('set-commission').value);
   if([reward,minw,cooldown,maxads,commission].some(isNaN)){
-    showToast('أدخل قيم صحيحة لكل الحقول', 'error'); return;
+    showToast('أدخل قيم صحيحة', 'error'); return;
   }
-  const d = await api('settings', {
+
+  // الشبكات المفعّلة
+  const allNets = document.getElementById('set-usdt-nets').value.split(',').map(n=>n.trim()).filter(Boolean);
+  const actNets = allNets.filter(n => document.getElementById('net-'+n)?.checked);
+
+  const payload = {
     reward_per_ad: reward, minimum_withdraw: minw,
     cooldown_seconds: cooldown, max_ads_per_day: maxads,
-    withdrawal_commission: commission
-  });
-  if(d.success) showToast('✅ تم حفظ الإعدادات', 'success');
+    withdrawal_commission: commission,
+    // USDT
+    min_usdt:         parseFloat(document.getElementById('set-min-usdt').value) || 10,
+    fee_usdt:         parseFloat(document.getElementById('set-fee-usdt').value) || 1,
+    usdt_networks:    allNets.join(','),
+    active_usdt_nets: actNets.join(',') || allNets[0],
+    // طرق السحب
+    min_vodafone:  parseFloat(document.getElementById('set-min-vodafone').value)  || 5,
+    fee_vodafone:  parseFloat(document.getElementById('set-fee-vodafone').value)  || 1,
+    min_etisalat:  parseFloat(document.getElementById('set-min-etisalat').value)  || 5,
+    fee_etisalat:  parseFloat(document.getElementById('set-fee-etisalat').value)  || 1,
+    min_orange:    parseFloat(document.getElementById('set-min-orange').value)    || 5,
+    fee_orange:    parseFloat(document.getElementById('set-fee-orange').value)    || 1,
+    min_we:        parseFloat(document.getElementById('set-min-we').value)        || 5,
+    fee_we:        parseFloat(document.getElementById('set-fee-we').value)        || 1,
+    min_binance:   parseFloat(document.getElementById('set-min-binance').value)   || 10,
+    fee_binance:   parseFloat(document.getElementById('set-fee-binance').value)   || 0.5,
+    min_ethereum:  parseFloat(document.getElementById('set-min-ethereum').value)  || 20,
+    fee_ethereum:  parseFloat(document.getElementById('set-fee-ethereum').value)  || 2,
+    // ثيم ورسالة ترحيب
+    active_theme:    document.getElementById('set-theme').value,
+    welcome_message: document.getElementById('set-welcome-msg').value,
+    welcome_active:  document.getElementById('set-welcome-active').checked,
+  };
+
+  const d = await api('settings', payload);
+  if(d.success) showToast('✅ تم حفظ جميع الإعدادات', 'success');
   else showToast(d.error || 'خطأ', 'error');
 }
 

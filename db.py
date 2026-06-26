@@ -53,12 +53,12 @@ def fmt_date(dt_str: str) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def get_user(user_id: str) -> dict | None:
-    r = supabase.table('users').select('*').eq('user_id', user_id).maybe_single().execute()
-    return r.data if r and r.data else None
+    r = supabase.table('users').select('*').eq('user_id', user_id).single().execute()
+    return r.data if r.data else None
 
 def get_user_by_username(username: str) -> dict | None:
-    r = supabase.table('users').select('*').eq('username', username).maybe_single().execute()
-    return r.data if r and r.data else None
+    r = supabase.table('users').select('*').eq('username', username).single().execute()
+    return r.data if r.data else None
 
 def create_user(user_id: str, username: str, first_name: str = '',
                 email: str = '', password: str = '',
@@ -173,8 +173,8 @@ def update_withdrawal_status(withdrawal_id: int, status: str):
         .eq('id', withdrawal_id).execute()
 
 def get_withdrawal(withdrawal_id: int) -> dict | None:
-    r = supabase.table('withdrawals').select('*').eq('id', withdrawal_id).maybe_single().execute()
-    return r.data if r and r.data else None
+    r = supabase.table('withdrawals').select('*').eq('id', withdrawal_id).single().execute()
+    return r.data if r.data else None
 
 def withdrawal_to_dict(w: dict) -> dict:
     return {
@@ -231,29 +231,66 @@ def get_settings() -> dict:
     if r.data:
         s = r.data[0]
         return {
+            # إعدادات الإعلانات
             'reward_per_ad':         float(s.get('reward_per_ad')         or 0.5),
             'min_withdraw':          float(s.get('minimum_withdraw')       or 5),
             'cooldown_seconds':      int(s.get('cooldown_seconds')         or 20),
             'max_ads_per_day':       int(s.get('max_ads_per_day')          or 100),
             'withdrawal_commission': float(s.get('withdrawal_commission')  or 1),
+            # التحقق البشري
+            'captcha_every':         int(s.get('captcha_every')            or 10),
+            # رسالة الترحيب
+            'welcome_message':       s.get('welcome_message', ''),
+            'welcome_active':        bool(s.get('welcome_active', False)),
+            # الثيم
+            'active_theme':          s.get('active_theme', 'dark_gold'),
+            # حدود ورسوم كل طريقة سحب
+            'min_vodafone':  float(s.get('min_vodafone')  or 5),
+            'fee_vodafone':  float(s.get('fee_vodafone')  or 1),
+            'min_etisalat':  float(s.get('min_etisalat')  or 5),
+            'fee_etisalat':  float(s.get('fee_etisalat')  or 1),
+            'min_orange':    float(s.get('min_orange')    or 5),
+            'fee_orange':    float(s.get('fee_orange')    or 1),
+            'min_we':        float(s.get('min_we')        or 5),
+            'fee_we':        float(s.get('fee_we')        or 1),
+            'min_binance':   float(s.get('min_binance')   or 10),
+            'fee_binance':   float(s.get('fee_binance')   or 0.5),
+            'min_ethereum':  float(s.get('min_ethereum')  or 20),
+            'fee_ethereum':  float(s.get('fee_ethereum')  or 2),
+            # USDT
+            'min_usdt':          float(s.get('min_usdt')          or 10),
+            'fee_usdt':          float(s.get('fee_usdt')          or 1),
+            'usdt_networks':     s.get('usdt_networks',     'TRC20,ERC20,BEP20'),
+            'active_usdt_nets':  s.get('active_usdt_nets',  'TRC20,ERC20,BEP20'),
+            'fee_ethereum':  float(s.get('fee_ethereum')  or 2),
         }
-    # إنشاء إعدادات افتراضية لو مش موجودة
     default = {
         'reward_per_ad': 0.5, 'minimum_withdraw': 5.0,
         'cooldown_seconds': 20, 'max_ads_per_day': 100,
-        'withdrawal_commission': 1.0
+        'withdrawal_commission': 1.0, 'captcha_every': 10,
+        'welcome_message': '', 'welcome_active': False,
+        'active_theme': 'dark_gold',
+        'min_vodafone': 5, 'fee_vodafone': 1,
+        'min_etisalat': 5, 'fee_etisalat': 1,
+        'min_orange':   5, 'fee_orange':   1,
+        'min_we':       5, 'fee_we':       1,
+        'min_binance':  10,'fee_binance':  0.5,
+        'min_ethereum': 20,'fee_ethereum': 2,
     }
     supabase.table('settings').insert(default).execute()
-    return {
-        'reward_per_ad': 0.5, 'min_withdraw': 5,
-        'cooldown_seconds': 20, 'max_ads_per_day': 100,
-        'withdrawal_commission': 1,
-    }
+    return {k if k != 'minimum_withdraw' else 'min_withdraw': v for k,v in default.items()}
 
 def update_settings(**kwargs) -> dict:
     # تحويل min_withdraw → minimum_withdraw
     if 'min_withdraw' in kwargs:
         kwargs['minimum_withdraw'] = kwargs.pop('min_withdraw')
+    # حذف المفاتيح غير الموجودة في قاعدة البيانات
+    allowed = {'reward_per_ad','minimum_withdraw','cooldown_seconds','max_ads_per_day',
+               'withdrawal_commission','captcha_every','welcome_message','welcome_active',
+               'active_theme','min_vodafone','fee_vodafone','min_etisalat','fee_etisalat',
+               'min_orange','fee_orange','min_we','fee_we','min_binance','fee_binance',
+               'min_ethereum','fee_ethereum'}
+    kwargs = {k:v for k,v in kwargs.items() if k in allowed}
     r = supabase.table('settings').select('id').limit(1).execute()
     if r.data:
         supabase.table('settings').update(kwargs).eq('id', r.data[0]['id']).execute()
@@ -332,6 +369,16 @@ def get_admin_stats() -> dict:
         'new_today':           new_today,
         **sett
     }
+
+def increment_ads_since_captcha(user_id: str) -> int:
+    user = get_user(user_id)
+    if not user: return 0
+    new_count = (user.get('ads_since_captcha') or 0) + 1
+    update_user(user_id, ads_since_captcha=new_count)
+    return new_count
+
+def reset_captcha_count(user_id: str):
+    update_user(user_id, ads_since_captcha=0)
 
 def get_top_referrers(limit: int = 50) -> list:
     r = supabase.table('users').select('user_id,username,referral_count,total_earned')\

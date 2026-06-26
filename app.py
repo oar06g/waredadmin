@@ -4,7 +4,7 @@ Flask + Supabase (بدون SQLAlchemy)
 PORT: 5001
 """
 import sys, os
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'shared'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'shared'))
 
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
@@ -173,7 +173,12 @@ def withdrawal_action():
 def settings():
     d     = request.json or {}
     keys  = ['reward_per_ad', 'min_withdraw', 'cooldown_seconds',
-             'max_ads_per_day', 'withdrawal_commission']
+             'max_ads_per_day', 'withdrawal_commission',
+             'captcha_every', 'welcome_message', 'welcome_active', 'active_theme',
+             'min_vodafone', 'fee_vodafone', 'min_etisalat', 'fee_etisalat',
+             'min_orange',   'fee_orange',   'min_we',       'fee_we',
+             'min_binance',  'fee_binance',  'min_ethereum', 'fee_ethereum',
+             'min_usdt',     'fee_usdt',     'usdt_networks','active_usdt_nets']
     patch = {k: d[k] for k in keys if k in d}
     if not patch:
         return jsonify({'error': 'لا توجد قيم للتحديث'}), 400
